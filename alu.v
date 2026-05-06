@@ -8,23 +8,13 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
 );
   
   reg [width-1 : 0] temp_a, temp_b;
-  reg [1:0] count; 
-  reg count_en;
   reg [2*width-1:0]prev_res;
   reg prev_err;
   reg prev_oflow;
   reg prev_g;
   reg prev_l;
   reg prev_e;
-  
-  always@(posedge clk)begin
-    if(count_en)begin
-      count <= count + 1;
-      if(count == 2'd2) count <= 0;
-    end
-    else
-      count <= 0;
-  end
+  reg prev_cout;
   
   always@(posedge clk or posedge rst)begin
     if(rst)begin
@@ -35,24 +25,28 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
       e <= 0;
       l <= 0;
       err <= 0;
-      count_en <= 0;
     end
     
     else if(ce)begin
-      //res <= 'd0;
       oflow <= 'd0;
       cout <= 'd0;
       err <= 0;
       g <= 0;
       e <= 0;
       l <= 0;
-      count_en <= 0;
       res <= prev_res;
       err <= prev_err;
       oflow <= prev_oflow;
       g <= prev_g;
       l <= prev_l;
       e <= prev_e;
+      cout <= prev_cout;
+      prev_oflow <= 'd0;
+      prev_cout <= 'd0;
+      prev_err <= 0;
+      prev_g <= 0;
+      prev_e <= 0;
+      prev_l <= 0;
       
       if(mode)begin
         case(cmd)
@@ -60,7 +54,7 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
           0:begin
             if(inp_valid == 2'b11)begin
                 prev_res <= opa + opb;
-                cout <= ({1'b0,opa} + {1'b0,opb}) >> width;
+                prev_cout <= ({1'b0,opa} + {1'b0,opb}) >> width;
             end
             else begin
                 prev_err <= 1'b1;
@@ -80,7 +74,7 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
           2:begin
             if(inp_valid == 2'b11 )begin
                 prev_res <= opa + opb + cin;
-                cout <= ({1'b0,opa} + {1'b0,opb} + cin) >> width;
+                prev_cout <= ({1'b0,opa} + {1'b0,opb} + cin) >> width;
             end
             else begin
                 prev_err <= 1'b1;
@@ -145,34 +139,26 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
           end
           
           9:begin
-            count_en <= 1;
             if(inp_valid == 2'b11)begin
               temp_a <= opa+1;
               temp_b <= opb+1;
-              if(count == 2'd1)
-                res <= temp_a * temp_b;
+              prev_res <= temp_a * temp_b;
             end
             else begin
-              if(count == 2'd1)begin
                 res <= temp_a * temp_b;
-                err <= 1;
-              end
+                prev_err <= 1;
             end
           end
           
           10:begin
-            count_en <= 1;
             if(inp_valid == 2'b11)begin
               temp_a <= opa<<1;
               temp_b <= opb;
-              if(count == 2'd1)
-                res <= temp_a * temp_b;
+              prev_res <= temp_a * temp_b;
             end
             else begin
-              if(count == 2'd1)begin
-                res <= temp_a * temp_b;
-                err <= 1;
-              end
+                prev_res <= temp_a * temp_b;
+                prev_err <= 1;
             end
           end
             
@@ -207,7 +193,7 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
           default :begin 
             prev_res <= 'd0;
             prev_oflow <= 'd0;
-            cout <= 'd0;
+            prev_cout <= 'd0;
             prev_g <= 0;
             prev_e <= 0;
             prev_l <= 0;
