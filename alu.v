@@ -69,12 +69,10 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
 
           1:begin
             if(inp_valid == 2'b11)begin
-              if(count == 2'd0)
                 prev_res <= opa - opb;
                 prev_oflow <= opa < opb;
             end
             else begin
-              if(count == 2'd0)
                 prev_err <= 1'b1;
             end
           end
@@ -151,13 +149,13 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
             if(inp_valid == 2'b11)begin
               temp_a <= opa+1;
               temp_b <= opb+1;
-              if(count == 2'd0)
-                prev_res <= temp_a * temp_b;
+              if(count == 2'd1)
+                res <= temp_a * temp_b;
             end
             else begin
-              if(count == 2'd0)begin
-                prev_res <= temp_a * temp_b;
-                prev_err <= 1;
+              if(count == 2'd1)begin
+                res <= temp_a * temp_b;
+                err <= 1;
               end
             end
           end
@@ -168,12 +166,12 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
               temp_a <= opa<<1;
               temp_b <= opb;
               if(count == 2'd1)
-                prev_res <= temp_a * temp_b;
+                res <= temp_a * temp_b;
             end
             else begin
               if(count == 2'd1)begin
-                prev_res <= temp_a * temp_b;
-                prev_err <= 1;
+                res <= temp_a * temp_b;
+                err <= 1;
               end
             end
           end
