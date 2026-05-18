@@ -28,6 +28,10 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
     end
     
     else if(ce)begin
+      if (mult_processing) begin
+                prev_res <= temp_a * temp_b; 
+                mult_processing <= 1'b0;            
+      end
       oflow <= 'd0;
       cout <= 'd0;
       err <= 0;
@@ -142,10 +146,9 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
             if(inp_valid == 2'b11)begin
               temp_a <= opa+1;
               temp_b <= opb+1;
-              prev_res <= temp_a * temp_b;
+              mult_processing <= 1'b1;
             end
             else begin
-                res <= temp_a * temp_b;
                 prev_err <= 1;
             end
           end
@@ -154,7 +157,7 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
             if(inp_valid == 2'b11)begin
               temp_a <= opa<<1;
               temp_b <= opb;
-              prev_res <= temp_a * temp_b;
+              mult_processing <= 1'b1;
             end
             else begin
                 prev_res <= temp_a * temp_b;
