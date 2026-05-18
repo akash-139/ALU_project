@@ -15,6 +15,7 @@ module alu_project#(parameter width = 8, cmd_width = 4)(
   reg prev_l;
   reg prev_e;
   reg prev_cout;
+  reg mult_processing;
   
   always@(posedge clk or posedge rst)begin
     if(rst)begin
